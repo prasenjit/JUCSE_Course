@@ -26,3 +26,11 @@ touch $FILENAME
 ls
 rm $FILENAME
 ls
+
+world="World"
+echo 'Hello $world'
+echo "Hello $world"
+
+DIR="$(readlink -f "$0")"
+echo $DIR
+echo "$(dirname $DIR)"
