@@ -9,7 +9,6 @@
 
 char *readLine()
 {
-    fflush(stdin);
     fflush(stdout);
     char *str = NULL;
     size_t bytes;
