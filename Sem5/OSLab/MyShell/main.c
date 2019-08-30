@@ -9,52 +9,50 @@
 
 char *readLine()
 {
-    char *str;
+    fflush(stdin);
+    fflush(stdout);
+    char *str = NULL;
     size_t bytes;
     getline(&str, &bytes, stdin);
-    //printf("Entered: %s\n", str);
+    // printf("Entered: %s\n", str);
+    // printf("Bytes read: %d\n", bytes);
     return str;
 }
 
 char **parseLine(char *str, int *n_token)
 {
     *n_token = 0;
-    char **result = malloc(((*n_token) + 1) * sizeof(char *));
-    size_t n = strlen(str);
-    int i, j;
-    int start, end;
-    start = 0;
-    for (i = 0, j = 0; i < n && j < n; ++i)
-    {
-        start = i;
-        for (j = i; j < n; ++j)
-        {
-            // printf("%c", str[j]);
-            if (str[j] == ' ' || str[j] == '\n' || str[j] == '\0')
-            {
-                end = j;
+    int n = strlen(str);
+    char **tokens = malloc(sizeof(char *));
+    tokens[0] = NULL;
+
+    int i = 0;
+    while (i < n) {
+        int start = i;
+        for (; i < n; ++i) {
+            if (str[i] == ' ' || str[i] == '\n' || str[i] == '\0') {
                 break;
             }
         }
-        // printf("start: %d  end: %d\n", start, end);
-        char *token = malloc(sizeof(char) * (end - start + 1));
-        int k = 0;
-        for (; start < end && str[start] != '\n'; ++k, ++start)
-        {
-            token[k] = str[start];
-            // printf("  k=%d  start=%d  %c\n", k, start, str[start]);
-        }
-        token[k] = '\0';
-        // printf("Token: %s\n", token);
-        start = end;
-        i = end;
-        ++(*n_token);
-        result[(*n_token) - 1] = token;
-        result = realloc(result, ((*n_token) + 1) * sizeof(char *));
-        result[(*n_token)] = NULL;
+        int end = i;
+        if (end - start > 0) {
+            ++(*n_token);
+            tokens = realloc(tokens, (*n_token + 1) * sizeof(char *));
+            tokens[*n_token] = NULL;
+            char *token = NULL;
+            token = malloc(sizeof(char) * (end - start + 1));
+            int k;
+            int len = end - start;
+            for (k = 0; k < len; ++k) {
+                token[k] = str[start];
+                ++start;
+            }
+            token[k] = '\0';
+            tokens[*n_token - 1] = token;
+        } 
+        ++i;
     }
-    //result[(*n_token) - 1] = NULL;
-    return result;
+    return tokens;
 }
 
 int executeCommand(char **tokens, int n_token)
@@ -80,28 +78,22 @@ int executeCommand(char **tokens, int n_token)
 int main(void)
 {
     int status;
-    printf("\033[22;31m ============ MyShell =============\n");
-    printf("\033[22;31m || BCSE III Project             ||\n");
-    printf("\033[22;31m || Author: Prasenjit Kumar Shaw ||\n");
-    printf("\033[22;31m ==================================\n");
+    // printf("\033[22;31m ============ MyShell =============\n");
+    // printf("\033[22;31m || BCSE III Project             ||\n");
+    // printf("\033[22;31m || Author: Prasenjit Kumar Shaw ||\n");
+    // printf("\033[22;31m ==================================\n");
+    // printf("\n");
+    char *str;// = NULL;
+    char **tokens;// = NULL;
     do
     {
-        printf("\033[22;32m> ");
-        char *str = readLine();
+        // printf("\033[22;32m> ");
+        printf("> ");
+        str = readLine();
         int n_token;
-        char **tokens = parseLine(str, &n_token);
-        int i;
-        printf("\033[22;36mTokens:\n");
-        for (i = 0; i < n_token; ++i)
-        {
-            printf("\033[22;35m%d: %s\n", i + 1, tokens[i]);
-        }
+        tokens = parseLine(str, &n_token);
         status = executeCommand(tokens, n_token);
         free(str);
-        for (i = 0; i < n_token; ++i)
-        {
-            free(tokens[i]);
-        }
         free(tokens);
     } while (status);
 
