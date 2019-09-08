@@ -7,14 +7,22 @@
 #define EXIT_FAILURE 1
 #define EXIT_SUCCESS 0
 
+size_t currdir_size=200;
+char CURRDIR[200];
+
 char *readLine()
 {
     fflush(stdout);
+    printf("> ");
     char *str = NULL;
     size_t bytes;
     getline(&str, &bytes, stdin);
     // printf("Entered: %s\n", str);
     // printf("Bytes read: %d\n", bytes);
+    // printf("Len: %ld\n", strlen(str));
+    if (strlen(str) == 1) {
+        return NULL;
+    }
     return str;
 }
 
@@ -136,14 +144,25 @@ int builtInEditFile(char **tokens)
 
 int builtInInfo(char **tokens)
 {
-    char *temp = tokens[0];
-    tokens[0] = malloc(sizeof(char) * 5);
-    tokens[0][0] = 'f';
-    tokens[0][1] = 'i';
-    tokens[0][2] = 'l';
-    tokens[0][3] = 'e';
-    tokens[0][4] = '\0';
-    free(temp);
+    char *str = malloc(sizeof(char) * 1000);
+    strcpy(str, "bash ");
+    strcat(str, CURRDIR);
+    strcat(str, "/info_command.sh ");
+    strcat(str, tokens[1]);
+
+    int n_token;
+    char **newtokens = parseLine(str, &n_token);
+
+	free(str);
+	// int i;
+    // printf("n_token: %d\n", n_token);
+	// for (i = 0; i < n_token; ++i) {
+	// 	printf("%ld\t%s\n", strlen(newtokens[i]), newtokens[i]);
+	// }
+
+	free(tokens);
+	tokens = newtokens;
+    
     return newProcess(tokens);
 }
 
@@ -180,16 +199,27 @@ int executeCommand(char **tokens, int n_token)
     return 1;
 }
 
+void init() {
+	char *ptr = getcwd(CURRDIR, currdir_size);
+	if (ptr == NULL) {
+		printf("Error occured during initialization... Exiting...\n");
+	}
+	printf("CURRDIR: %s\n", CURRDIR);
+	printAbout();	
+}
+
 int main(void)
 {
-    printAbout();
+	init();
     int status;
     char *str;
     char **tokens;
     do
     {
-        printf("> ");
-        str = readLine();
+        do {
+            str = readLine();
+        } while (str == NULL);
+
         int n_token;
         tokens = parseLine(str, &n_token);
         status = executeCommand(tokens, n_token);
