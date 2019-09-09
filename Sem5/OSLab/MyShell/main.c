@@ -3,6 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #define EXIT_FAILURE 1
 #define EXIT_SUCCESS 0
@@ -119,16 +121,11 @@ int builtInChdir(char *path)
 
 int builtInMkdir(char **tokens)
 {
-    char *temp = tokens[0];
-    tokens[0] = malloc(sizeof(char) * 6);
-    tokens[0][0] = 'm';
-    tokens[0][1] = 'k';
-    tokens[0][2] = 'd';
-    tokens[0][3] = 'i';
-    tokens[0][4] = 'r';
-    tokens[0][5] = '\0';
-    free(temp);
-    return newProcess(tokens);
+    struct stat st;
+    if (stat(tokens[1], &st) == -1) {
+        mkdir (tokens[1], 0644);
+    }
+    return 1;
 }
 
 int builtInEditFile(char **tokens)
@@ -154,11 +151,6 @@ int builtInInfo(char **tokens)
     char **newtokens = parseLine(str, &n_token);
 
 	free(str);
-	// int i;
-    // printf("n_token: %d\n", n_token);
-	// for (i = 0; i < n_token; ++i) {
-	// 	printf("%ld\t%s\n", strlen(newtokens[i]), newtokens[i]);
-	// }
 
 	free(tokens);
 	tokens = newtokens;
@@ -223,6 +215,7 @@ int main(void)
         int n_token;
         tokens = parseLine(str, &n_token);
         status = executeCommand(tokens, n_token);
+        // printf("status:%d\n", status);
         free(str);
         free(tokens);
     } while (status);
